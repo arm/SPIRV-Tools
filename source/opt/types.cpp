@@ -954,7 +954,7 @@ std::string GraphARM::str() const {
 bool GraphARM::is_shaped() const {
   // A graph is considered to be shaped if all its interface tensors are shaped
   for (auto ioty : io_types_) {
-    auto tensor_type = ioty->AsTensorEXT();
+    auto tensor_type = ioty->AsTensorARM();
     assert(tensor_type);
     if (!tensor_type->is_shaped()) {
       return false;
