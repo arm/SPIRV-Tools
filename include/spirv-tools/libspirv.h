@@ -1027,6 +1027,19 @@ SPIRV_TOOLS_EXPORT void spvOptimizerRegisterPerformancePasses(
 SPIRV_TOOLS_EXPORT void spvOptimizerRegisterSizePasses(
     spv_optimizer_t* optimizer);
 
+struct spv_graph_shape_input
+{
+    uint32_t descriptor_set;
+    uint32_t binding_id;
+    uint32_t rank;
+    const int64_t* shape; // Pointer to array of length `rank`
+};
+
+// Registers a pass that attempts to shape the graphs in the code
+SPIRV_TOOLS_EXPORT void spvOptimizerRegisterGraphShapePass(
+    spv_optimizer_t* optimizer, const size_t num_inputs, 
+    const spv_graph_shape_input* inputs);
+
 // Registers a pass specified by a flag in an optimizer object.
 SPIRV_TOOLS_EXPORT bool spvOptimizerRegisterPassFromFlag(
     spv_optimizer_t* optimizer, const char* flag);
