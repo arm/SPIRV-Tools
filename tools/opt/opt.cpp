@@ -143,7 +143,7 @@ Options (in lexicographical order):)",
                does not support RelaxedPrecision or ignores it. This pass also
                removes all RelaxedPrecision decorations.)");
   printf(R"(
-  --convert-to-sampled-image "<descriptor set>:<binding> ..."
+  --convert-to-sampled-image="<descriptor set>:<binding> ..."
                convert images and/or samplers with the given pairs of descriptor
                set and binding to sampled images. If a pair of an image and a
                sampler have the same pair of descriptor set and binding that is
@@ -255,6 +255,9 @@ Options (in lexicographical order):)",
   --freeze-spec-const
                Freeze the values of specialization constants to their default
                values.)");
+  printf(R"(
+  --graph-shape "<descriptor set>:<binding>:<shape> ..."
+               Shape graphs.)");
   printf(R"(
   --graphics-robust-access
                Clamp indices used to access buffers and internal composite
