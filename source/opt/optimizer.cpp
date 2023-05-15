@@ -643,6 +643,24 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag,
     RegisterPass(CreateResolveBindingConflictsPass());
   } else if (pass_name == "canonicalize-ids") {
     RegisterPass(CreateCanonicalizeIdsPass());
+  } else if (pass_name == "graph-shape") {
+    if (pass_args.size() > 0) {
+      auto interface_tensor_shapes =
+          opt::GraphShapePass::ParseInterfaceTensorShapesString(
+              pass_args.c_str());
+      if (!interface_tensor_shapes) {
+        Errorf(consumer(), nullptr, {},
+               "Invalid argument for --graph-shape: %s", pass_args.c_str());
+        return false;
+      }
+      RegisterPass(CreateGraphShapePass(std::move(*interface_tensor_shapes)));
+    } else {
+      Errorf(consumer(), nullptr, {},
+             "Invalid interface tensor shape information '%s'. Expected a "
+             "space-separated list of <descriptor set>:<binding>:<shape>.",
+             pass_args.c_str());
+      return false;
+    }
   } else {
     Errorf(consumer(), nullptr, {},
            "Unknown flag '--%s'. Use --help for a list of valid flags",
@@ -1209,6 +1227,12 @@ Optimizer::PassToken CreateCanonicalizeIdsPass() {
       MakeUnique<opt::CanonicalizeIdsPass>());
 }
 
+Optimizer::PassToken CreateGraphShapePass(
+    const std::map<std::pair<uint32_t, uint32_t>, std::vector<int64_t>>&
+        interface_tensor_shapes) {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::GraphShapePass>(interface_tensor_shapes));
+}
 }  // namespace spvtools
 
 extern "C" {
@@ -1246,6 +1270,21 @@ SPIRV_TOOLS_EXPORT void spvOptimizerRegisterPerformancePasses(
 SPIRV_TOOLS_EXPORT void spvOptimizerRegisterSizePasses(
     spv_optimizer_t* optimizer) {
   reinterpret_cast<spvtools::Optimizer*>(optimizer)->RegisterSizePasses();
+}
+
+SPIRV_TOOLS_EXPORT void spvOptimizerRegisterGraphShapePass(
+    spv_optimizer_t* optimizer, const size_t num_inputs,
+    const spv_graph_shape_input* inputs) {
+  // Convert C-style public API structs into the C++ std::map used by the internal implementation
+  std::map<std::pair<uint32_t, uint32_t>, std::vector<int64_t>> inputs_cpp;
+  for (size_t i = 0; i < num_inputs; ++i)
+  {
+    inputs_cpp.emplace(
+        std::make_pair(inputs[i].descriptor_set, inputs[i].binding_id),
+        std::vector<int64_t>(inputs[i].shape, inputs[i].shape + inputs[i].rank));
+  }
+  spvtools::Optimizer::PassToken pass = spvtools::CreateGraphShapePass(inputs_cpp);
+  reinterpret_cast<spvtools::Optimizer*>(optimizer)->RegisterPass(std::move(pass));
 }
 
 SPIRV_TOOLS_EXPORT bool spvOptimizerRegisterPassFromFlag(
