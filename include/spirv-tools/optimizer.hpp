@@ -15,6 +15,7 @@
 #ifndef INCLUDE_SPIRV_TOOLS_OPTIMIZER_HPP_
 #define INCLUDE_SPIRV_TOOLS_OPTIMIZER_HPP_
 
+#include <map>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -1032,6 +1033,11 @@ Optimizer::PassToken CreateResolveBindingConflictsPass();
 // --strip-debug because this pass will use OpName to canonicalize IDs. i.e. Run
 // --strip-debug after this pass.
 Optimizer::PassToken CreateCanonicalizeIdsPass();
+
+// TODO use unordered_map
+Optimizer::PassToken CreateGraphShapePass(
+    const std::map<std::pair<uint32_t, uint32_t>, std::vector<uint64_t>>&
+        interface_tensor_shapes);
 }  // namespace spvtools
 
 #endif  // INCLUDE_SPIRV_TOOLS_OPTIMIZER_HPP_

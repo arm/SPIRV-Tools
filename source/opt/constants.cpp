@@ -287,6 +287,10 @@ std::unique_ptr<Constant> ConstantManager::CreateConstant(
     auto components = GetConstantsFromIds(literal_words_or_ids);
     if (components.empty()) return nullptr;
     return MakeUnique<ArrayConstant>(at, components);
+  } else if (auto* tt = type->AsTensorARM()) {
+    auto components = GetConstantsFromIds(literal_words_or_ids);
+    if (components.empty()) return nullptr;
+    return MakeUnique<TensorConstant>(tt, components);
   } else {
     return nullptr;
   }
@@ -365,6 +369,10 @@ std::unique_ptr<Instruction> ConstantManager::CreateCompositeInstruction(
       component_type_id = type_inst->GetSingleWordInOperand(component_index);
     } else if (type_inst && type_inst->opcode() == spv::Op::OpTypeArray) {
       component_type_id = type_inst->GetSingleWordInOperand(0);
+    } else if (type_inst && type_inst->opcode() == spv::Op::OpTypeTensorARM) {
+      // TODO tensor, handle nesting for higher rank tensors?
+      assert(false && "Unhandled composite tensor constant");
+      return nullptr;
     }
     uint32_t id = FindDeclaredConstant(component_const, component_type_id);
 
@@ -420,6 +428,9 @@ const Constant* ConstantManager::GetNullCompositeConstant(const Type* type) {
     for (uint32_t i = 0; i < element_count; i++) {
       literal_words_or_id.push_back(null_id);
     }
+  } else if (type->AsTensorARM()) {
+    assert(false && "Unhandled null composite tensor");
+    return nullptr;
   } else {
     return nullptr;
   }
