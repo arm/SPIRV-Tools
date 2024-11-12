@@ -314,7 +314,9 @@ const Constant* ConstantManager::GetConstantFromInst(const Instruction* inst) {
     case spv::Op::OpConstantNull:
     case spv::Op::OpConstant:
     case spv::Op::OpConstantComposite:
+    case spv::Op::OpConstantCompositeReplicateEXT:
     case spv::Op::OpSpecConstantComposite:
+    case spv::Op::OpSpecConstantCompositeReplicateEXT:
       break;
     default:
       return nullptr;
